@@ -5,28 +5,60 @@ from Tkinter import *
 import tkMessageBox
 import random
 from collections import deque
+import platform
+import tkSimpleDialog
+
+class MyDialog(tkSimpleDialog.Dialog):
+
+    def body(self, master):
+
+        Label(master, text="Nr. of Mines:").grid(row=0)
+
+        self.e1 = Entry(master)
+
+        self.e1.grid(row=0, column=1)
+        return self.e1 # initial focus
+
+    def apply(self):
+        self.mines = int(self.e1.get())
+
 
 class Minesweeper:
 
-    def __init__(self, master):
+    def __init__(self, master, result):
+        # Check OS
+        UserOS = platform.system()
 
-        # import images
-        self.tile_plain = PhotoImage(file = "images/tile_plain.gif")
-        self.tile_clicked = PhotoImage(file = "images/tile_clicked.gif")
-        self.tile_mine = PhotoImage(file = "images/tile_mine.gif")
-        self.tile_flag = PhotoImage(file = "images/tile_flag.gif")
-        self.tile_wrong = PhotoImage(file = "images/tile_wrong.gif")
-        self.tile_no = []
-        for x in range(1, 9):
-            self.tile_no.append(PhotoImage(file = "images/tile_"+str(x)+".gif"))
+        if UserOS == "Windows":
+            # import images for Windows
+            self.tile_plain = PhotoImage(file = "images\\tile_plain.gif")
+            self.tile_clicked = PhotoImage(file = "images\\tile_clicked.gif")
+            self.tile_mine = PhotoImage(file = "images\\tile_mine.gif")
+            self.tile_flag = PhotoImage(file = "images\\tile_flag.gif")
+            self.tile_wrong = PhotoImage(file = "images\\tile_wrong.gif")
+            self.tile_no = []
+            for x in range(1, 9):
+                self.tile_no.append(PhotoImage(file = "images\\tile_"+str(x)+".gif"))
+        elif UserOS == "Linux":
+            # import images for Linux
+            self.tile_plain = PhotoImage(file = "images/tile_plain.gif")
+            self.tile_clicked = PhotoImage(file = "images/tile_clicked.gif")
+            self.tile_mine = PhotoImage(file = "images/tile_mine.gif")
+            self.tile_flag = PhotoImage(file = "images/tile_flag.gif")
+            self.tile_wrong = PhotoImage(file = "images/tile_wrong.gif")
+            self.tile_no = []
+            for x in range(1, 9):
+                self.tile_no.append(PhotoImage(file = "images/tile_"+str(x)+".gif"))
+        else:
+            print "Unknown OS."
 
         # set up frame
         frame = Frame(master)
         frame.pack()
 
         # show "Minesweeper" at the top
-        self.label1 = Label(frame, text="Minesweeper")
-        self.label1.grid(row = 0, column = 0, columnspan = 10)
+        #self.label1 = Label(frame, text="Minesweeper")
+        #self.label1.grid(row = 0, column = 0, columnspan = 10)
 
         # create flag and clicked tile variables
         self.flags = 0
@@ -35,7 +67,8 @@ class Minesweeper:
 
         # create buttons
         self.buttons = dict({})
-        self.mines = 0
+        self.mines = result
+        self.currentMines = 0
         x_coord = 1
         y_coord = 0
         for x in range(0, 100):
@@ -44,8 +77,10 @@ class Minesweeper:
             gfx = self.tile_plain
             # currently random amount of mines
             if random.uniform(0.0, 1.0) < 0.1:
-                mine = 1
-                self.mines += 1
+                if self.currentMines < self.mines:
+                    mine = 1
+                    self.currentMines += 1
+                    print self.currentMines
             # 0 = Button widget
             # 1 = if a mine y/n (1/0)
             # 2 = state (0 = unclicked, 1 = clicked, 2 = flagged)
@@ -213,7 +248,8 @@ def main():
     # set program title
     root.title("Minesweeper")
     # create game instance
-    minesweeper = Minesweeper(root)
+    mines = MyDialog(root)
+    minesweeper = Minesweeper(root, mines.mines)
     # run event loop
     root.mainloop()
 
